@@ -45,6 +45,7 @@ type MiningState struct {
 	PendingResultCh   chan *types.Block
 	MiningResultCh    chan *types.Block
 	MiningResultPOSCh chan *types.Block
+	NewHeaderCh       chan [][]byte
 	MiningBlock       *MiningBlock
 }
 

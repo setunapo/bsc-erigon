@@ -18,6 +18,7 @@
 package eth
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -80,6 +81,7 @@ import (
 	"github.com/ledgerwatch/erigon/p2p"
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/rpc"
+	"github.com/ledgerwatch/erigon/rlp"
 	"github.com/ledgerwatch/erigon/turbo/engineapi"
 	"github.com/ledgerwatch/erigon/turbo/services"
 	"github.com/ledgerwatch/erigon/turbo/shards"
@@ -404,6 +406,8 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 	miner := stagedsync.NewMiningState(&config.Miner)
 	backend.pendingBlocks = miner.PendingResultCh
 	backend.minedBlocks = miner.MiningResultCh
+	newHeaderCh, newHeaderChClean := backend.notifications.Events.AddHeaderSubscription()
+	miner.NewHeaderCh = newHeaderCh
 
 	// proof-of-work mining
 	mining := stagedsync.New(
@@ -504,6 +508,8 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 	}
 	go func() {
 		defer debug.LogPanic()
+		defer newHeaderChClean()
+
 		for {
 			select {
 			case b := <-backend.minedBlocks:
@@ -520,11 +526,11 @@ func New(stack *node.Node, config *ethconfig.Config, logger log.Logger) (*Ethere
 						Hash:   b.Hash(),
 					},
 				})
-				if err := backend.sentriesClient.Hd.AddMinedHeader(b.Header()); err != nil {
-					log.Error("add mined block to header downloader", "err", err)
-				}
 				if err := backend.sentriesClient.Bd.AddMinedBlock(b); err != nil {
 					log.Error("add mined block to body downloader", "err", err)
+				}
+				if err := backend.sentriesClient.Hd.AddMinedHeader(b.Header()); err != nil {
+					log.Error("add mined block to header downloader", "err", err)
 				}
 
 			case b := <-backend.pendingBlocks:
@@ -659,10 +665,53 @@ func (s *Ethereum) shouldPreserve(block *types.Block) bool { //nolint
 	return s.isLocalBlock(block)
 }
 
+type chainReader struct {
+	config      *params.ChainConfig
+	tx          kv.Tx
+	blockReader services.FullBlockReader
+}
+
+func (cr chainReader) Config() *params.ChainConfig  { return cr.config }
+func (cr chainReader) CurrentHeader() *types.Header { panic("") }
+func (cr chainReader) GetHeader(hash common.Hash, number uint64) *types.Header {
+	if cr.blockReader != nil {
+		h, _ := cr.blockReader.Header(context.Background(), cr.tx, hash, number)
+		return h
+	}
+	return rawdb.ReadHeader(cr.tx, hash, number)
+}
+func (cr chainReader) GetHeaderByNumber(number uint64) *types.Header {
+	if cr.blockReader != nil {
+		h, _ := cr.blockReader.HeaderByNumber(context.Background(), cr.tx, number)
+		return h
+	}
+	return rawdb.ReadHeaderByNumber(cr.tx, number)
+
+}
+func (cr chainReader) GetHeaderByHash(hash common.Hash) *types.Header {
+	if cr.blockReader != nil {
+		number := rawdb.ReadHeaderNumber(cr.tx, hash)
+		if number == nil {
+			return nil
+		}
+		return cr.GetHeader(hash, *number)
+	}
+	h, _ := rawdb.ReadHeaderByHash(cr.tx, hash)
+	return h
+}
+func (cr chainReader) GetTd(hash common.Hash, number uint64) *big.Int {
+	td, err := rawdb.ReadTd(cr.tx, hash, number)
+	if err != nil {
+		log.Error("ReadTd failed", "err", err)
+		return nil
+	}
+	return td
+}
+
 // StartMining starts the miner with the given number of CPU threads. If mining
 // is already running, this method adjust the number of threads allowed to use
 // and updates the minimum price required by the transaction pool.
-func (s *Ethereum) StartMining(ctx context.Context, db kv.RwDB, mining *stagedsync.Sync, cfg params.MiningConfig, gasPrice *uint256.Int, quitCh chan struct{}) error {
+func (s *Ethereum) StartMining(pctx context.Context, db kv.RwDB, mining *stagedsync.Sync, cfg params.MiningConfig, gasPrice *uint256.Int, quitCh chan struct{}) error {
 	if !cfg.Enabled {
 		return nil
 	}
@@ -731,12 +780,16 @@ func (s *Ethereum) StartMining(ctx context.Context, db kv.RwDB, mining *stagedsy
 		})
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		defer debug.LogPanic()
 		defer close(s.waitForMiningStop)
 
 		mineEvery := time.NewTicker(3 * time.Second)
 		defer mineEvery.Stop()
+
+		newHeaderCh, clean := s.notifications.Events.AddHeaderSubscription()
+		defer clean()
 
 		var works bool
 		var hasWork bool
@@ -749,9 +802,45 @@ func (s *Ethereum) StartMining(ctx context.Context, db kv.RwDB, mining *stagedsy
 				hasWork = false
 			case <-mineEvery.C:
 				hasWork = true
+			case headersRlp := <-newHeaderCh:
+				if prl != nil {
+					if len(headersRlp) == 0 {
+						continue
+					}
+					headerRlp := headersRlp[0]
+					header := new(types.Header)
+					if err := rlp.Decode(bytes.NewReader(headerRlp), header); err != nil {
+						log.Warn("miner loop receive new header, decode header RLP err", err)
+						continue
+					}
+					log.Warn("New header coming ", "new_header_num: ", header.Number.Uint64(), " new_header_hash: ", header.Hash())
+
+					tx, err := s.chainDB.BeginRo(context.Background())
+					if err != nil {
+						continue
+					}
+					signedRecent, err := prl.SignRecently(&chainReader{config: s.sentriesClient.ChainConfig, tx: tx, blockReader: snapshotsync.NewBlockReader()}, header)
+					tx.Rollback()
+					if err != nil {
+						log.Warn("Not allowed to propose block", "err", err)
+						continue
+					}
+					if signedRecent {
+						log.Info("Signed recently, must wait")
+						continue
+					}
+					log.Warn("New header coming, mining block interrupt,", " new_header_num: ", header.Number.Uint64(), ", new_header_hash: ", header.Hash())
+					cancel()
+					ctx, cancel = context.WithCancel(context.Background())
+					select {
+					case s.miningSealingQuit <- struct{}{}:
+					default:
+						log.Info("None in-flight sealing task.")
+					}
+					hasWork = true
+				}
 			case err := <-errc:
 				works = false
-				hasWork = false
 				if errors.Is(err, libcommon.ErrStopped) {
 					return
 				}
@@ -764,7 +853,18 @@ func (s *Ethereum) StartMining(ctx context.Context, db kv.RwDB, mining *stagedsy
 
 			if !works && hasWork {
 				works = true
-				go func() { errc <- stages2.MiningStep(ctx, db, mining) }()
+				hasWork = false
+				go func() {
+					select {
+					case errc <- stages2.MiningStep(ctx, db, mining):
+						log.Warn("MiningStep finish", "err", err)
+						return
+					case <-ctx.Done():
+						errc <- errors.New("MiningStep cancel")
+						return
+					}
+
+				}()
 			}
 		}
 	}()
