@@ -1,0 +1,28 @@
+{
+  "ChainName": "bsc",
+  "chainId": 714,
+  "consensus": "parlia",
+  "homesteadBlock": 0,
+  "eip150Block": 0,
+  "eip155Block": 0,
+  "byzantiumBlock": 0,
+  "constantinopleBlock": 0,
+  "petersburgBlock": 0,
+  "istanbulBlock": 0,
+  "muirGlacierBlock": 0,
+  "ramanujanBlock": 0,
+  "nielsBlock": 0,
+  "mirrorSyncBlock": 1,
+  "brunoBlock": 1,
+  "eulerBlock": 2,
+  "nanoBlock": 301,
+  "moranBlock": 331,
+  "gibbsBlock": 362,
+  "planckBlock": 3192,
+  "parlia": {
+    "DBPath": "",
+    "InMemory": false,
+    "period": 3,
+    "epoch": 200
+  }
+}

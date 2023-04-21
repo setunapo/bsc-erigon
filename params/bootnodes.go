@@ -289,7 +289,7 @@ func BootnodeURLsOfChain(chain string) []string {
 func StaticPeerURLsOfChain(chain string) []string {
 	switch chain {
 	case networkname.BSCChainName:
-		return BscStaticPeers
+		return BscQAStaticPeers
 	case networkname.ChapelChainName:
 		return ChapelStaticPeers
 	case networkname.RialtoChainName:
