@@ -19,8 +19,8 @@
   "gibbsBlock": 3,
   "moranBlock": 5,
   "planckBlock": 5,
-  "bonehBlock": 190,
-  "lynnblock": 390,
+  "lubanBlock": 190,
+  "platoblock": 390,
   "parlia": {
     "DBPath": "",
     "InMemory": false,
