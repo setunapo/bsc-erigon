@@ -55,7 +55,7 @@ var (
 	RinkebyGenesisHash = libcommon.HexToHash("0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177")
 	GoerliGenesisHash  = libcommon.HexToHash("0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a")
 	//	BSCGenesisHash        = libcommon.HexToHash("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b")
-	BSCGenesisHash        = libcommon.HexToHash("0x48546401128f49c6e3ef4d32f07b5bc28407e9e1d85330c2ea9f2bb386db97d0")
+	BSCGenesisHash        = libcommon.HexToHash("0x46ae0617a68f3961187674cf2938365f17996a2756e9d5f23a987811b9fa8b25")
 	ChapelGenesisHash     = libcommon.HexToHash("0x6d3c66c5357ec91d5c43af47e234a939b22557cbb552dc45bebbceeed90fbe34")
 	RialtoGenesisHash     = libcommon.HexToHash("0xee835a629f9cf5510b48b6ba41d69e0ff7d6ef10f977166ef939db41f59f5501")
 	MumbaiGenesisHash     = libcommon.HexToHash("0x7b66506a9ebdbf30d32b43c5f15a3b1216269a1ec3a75aa3182b86176a2b1ca7")
