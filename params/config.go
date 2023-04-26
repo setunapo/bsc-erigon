@@ -83,7 +83,6 @@ var (
 	GoerliChainConfig = readChainSpec("chainspecs/goerli.json")
 
 	BSCChainConfig = readChainSpec("chainspecs/bsc.json")
-	// BSCChainConfig = readChainSpec("chainspecs/bsc-qa.json")
 
 	ChapelChainConfig = readChainSpec("chainspecs/chapel.json")
 
