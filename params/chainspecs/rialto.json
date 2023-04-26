@@ -19,7 +19,7 @@
   "gibbsBlock": 102,
   "moranBlock": 105,
   "planckBlock": 105,
-  "lubanBlock": 190000000,
+  "lubanBlock": 13400,
   "platoblock": 390000000,
   "parlia": {
     "DBPath": "",
