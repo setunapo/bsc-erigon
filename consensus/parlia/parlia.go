@@ -1332,7 +1332,9 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 		validators, err := p.getCurrentValidatorsBeforeLuban(header, ibs)
 		return validators, nil, err
 	}
-
+	tx, _ := p.db.BeginRw(context.Background())
+	stateReader := state.NewPlainStateReader(tx)
+	ibs2 := state.New(stateReader)
 	// method
 	method := "getMiningValidators"
 
@@ -1344,7 +1346,7 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 	log.Info("getCurrentValidators", "header", header.Number, "hash", header.Hash())
 	// call
 	msgData := hexutility.Bytes(data)
-	_, returnData, err := p.systemCall(header.Coinbase, systemcontracts.ValidatorContract, msgData[:], ibs, header, u256.Num0)
+	_, returnData, err := p.systemCall(header.Coinbase, systemcontracts.ValidatorContract, msgData[:], ibs2, header, u256.Num0)
 	if err != nil {
 		return nil, nil, err
 	}
