@@ -1332,9 +1332,9 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 		validators, err := p.getCurrentValidatorsBeforeLuban(header, ibs)
 		return validators, nil, err
 	}
-	// tx, dbErr := p.db.BeginRw(context.Background()) // fail
+	// tx, dbErr := p.db.BeginRw(context.Background()) // "abi: attempting to unmarshall an empty string while arguments are expected"
 
-	tx, dbErr := p.db.BeginRo(context.Background())
+	tx, dbErr := p.db.BeginRo(context.Background()) // "abi: attempting to unmarshall an empty string while arguments are expected"
 
 	// tx, dbErr := p.chainDb.BeginRo(context.Background()) // "mdbx_txn_begin: MDBX_TXN_OVERLAPPING: Overlapping read and write transactions for the current thread, label: chaindata,
 	if dbErr != nil {
