@@ -1332,7 +1332,11 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 		validators, err := p.getCurrentValidatorsBeforeLuban(header, ibs)
 		return validators, nil, err
 	}
-	tx, _ := p.db.BeginRw(context.Background())
+	// tx, dbErr := p.db.BeginRo(context.Background())
+	tx, dbErr := p.chainDb.BeginRo(context.Background())
+	if dbErr != nil {
+		log.Error("getCurrentValidators", "dbErr", dbErr)
+	}
 	stateReader := state.NewPlainStateReader(tx)
 	ibs2 := state.New(stateReader)
 	// method
