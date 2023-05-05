@@ -1341,6 +1341,7 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 		log.Error("Unable to pack tx for getMiningValidators", "err", err)
 		return nil, nil, err
 	}
+	log.Info("getCurrentValidators", "header", header.Number, "hash", header.Hash())
 	// call
 	msgData := hexutility.Bytes(data)
 	_, returnData, err := p.systemCall(header.Coinbase, systemcontracts.ValidatorContract, msgData[:], ibs, header, u256.Num0)
@@ -1356,6 +1357,9 @@ func (p *Parlia) getCurrentValidators(header *types.Header, ibs *state.IntraBloc
 
 	voteAddrmap := make(map[libcommon.Address]*types.BLSPublicKey, len(valSet))
 	for i := 0; i < len(valSet); i++ {
+		log.Info("getCurrentValidators valSet", "len(valSet)", len(valSet), "i", i,
+			"valSet[i]", valSet[i],
+			"voteAddrSet[i]", voteAddrSet[i])
 		voteAddrmap[valSet[i]] = &(voteAddrSet)[i]
 	}
 	//for i, a := range *ret0 {
