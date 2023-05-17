@@ -615,7 +615,7 @@ func (hd *HeaderDownload) InsertHeaders(hf FeedHeaderFunc, terminalTotalDifficul
 	var err error
 	var force bool
 	var blocksToTTD uint64
-	var blockTime uint64
+	// var blockTime uint64
 	for more {
 		if more, force, blocksToTTD, blockTime, err = hd.InsertHeader(hf, terminalTotalDifficulty, logPrefix, logChannel); err != nil {
 			return false, err
