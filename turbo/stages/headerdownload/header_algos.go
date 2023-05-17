@@ -604,7 +604,8 @@ func (hd *HeaderDownload) InsertHeader(hf FeedHeaderFunc, terminalTotalDifficult
 			blocksToTTD = x.Uint64()
 		}
 	}
-	return hd.insertQueue.Len() > 0 && hd.insertQueue[0].blockHeight <= hd.highestInDb+1, false, blocksToTTD, lastTime, nil
+	// return hd.insertQueue.Len() > 0 && hd.insertQueue[0].blockHeight <= hd.highestInDb+1, false, blocksToTTD, lastTime, nil
+	return false, false, blocksToTTD, lastTime, nil
 }
 
 // InsertHeaders attempts to insert headers into the database, verifying them first
