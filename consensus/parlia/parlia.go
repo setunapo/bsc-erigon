@@ -709,7 +709,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 		snap    *Snapshot
 		doLog   bool
 	)
-	log.Info("Parlia snapshot", "number", number, "hash", hash, "len(parents)", len(parents))
+	// log.Info("Parlia snapshot", "number", number, "hash", hash, "len(parents)", len(parents))
 	if s, ok := p.recentSnaps.Get(hash); ok {
 		snap = s
 	} else {
