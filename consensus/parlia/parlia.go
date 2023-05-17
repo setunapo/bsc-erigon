@@ -17,7 +17,6 @@ import (
 	"github.com/ledgerwatch/erigon-lib/chain"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon-lib/common/length"
-	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/common/math"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/willf/bitset"
@@ -612,14 +611,15 @@ func (p *Parlia) verifyCascadingFields(chain consensus.ChainHeaderReader, header
 	}
 
 	// Verify vote attestation for fast finality.
-	if err := p.verifyVoteAttestation(chain, header, parents); err != nil {
-		log.Warn("Verify vote attestation failed", "error", err, "hash", header.Hash(), "number", header.Number,
-			"parent", header.ParentHash, "coinbase", header.Coinbase, "extra", common.Bytes2Hex(header.Extra))
-		if chain.Config().IsPlato(header.Number.Uint64()) {
-			return err
+	/*
+		if err := p.verifyVoteAttestation(chain, header, parents); err != nil {
+			log.Warn("Verify vote attestation failed", "error", err, "hash", header.Hash(), "number", header.Number,
+				"parent", header.ParentHash, "coinbase", header.Coinbase, "extra", common.Bytes2Hex(header.Extra))
+			if chain.Config().IsPlato(header.Number.Uint64()) {
+				return err
+			}
 		}
-	}
-
+	*/
 	// All basic checks passed, verify the seal and return
 	return p.verifySeal(chain, header, parents)
 }
