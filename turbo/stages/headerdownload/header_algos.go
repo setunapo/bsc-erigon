@@ -887,8 +887,12 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 				}
 			}
 			if config.IsPlato(hi.highest) {
-				if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, hi.highestHeader); err == nil {
-					curJustifiedNumber = justifiedNumberGot
+				if highestHeader, err := headerReader.Header(context.Background(), db, hi.highestHash, hi.highest); highestHeader != nil {
+					if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, highestHeader); err == nil {
+						curJustifiedNumber = justifiedNumberGot
+					}
+				} else {
+					log.Error("FeedHeaderPoW Get highestHeader fail", "err", err, "hi.highest", hi.highest, "hi.highestHash", hi.highestHash)
 				}
 			}
 			if justifiedNumber == curJustifiedNumber {
@@ -913,7 +917,6 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 		if err != nil {
 			return nil, err
 		}
-		hi.highestHeader = header
 		hi.highest = blockHeight
 		hi.highestHash = hash
 		hi.highestTimestamp = header.Time

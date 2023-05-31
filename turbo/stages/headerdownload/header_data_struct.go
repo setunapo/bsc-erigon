@@ -377,8 +377,7 @@ type HeaderInserter struct {
 	newCanonical     bool
 	unwind           bool
 	unwindPoint      uint64
-	highest          uint64 // TODO(setunapo): can be replaced by highestHeader, same as highestTimestamp
-	highestHeader    *types.Header
+	highest          uint64
 	highestTimestamp uint64
 	canonicalCache   *lru.Cache[uint64, common.Hash]
 	headerReader     services.HeaderAndCanonicalReader
