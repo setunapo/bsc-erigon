@@ -873,6 +873,10 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 		return nil, fmt.Errorf("could not find parent with hash %x and height %d for header %x %d", header.ParentHash, blockHeight-1, hash, blockHeight)
 	}
 
+	if err = db.Put(kv.Headers, dbutils.HeaderKey(blockHeight, hash), headerRaw); err != nil {
+		return nil, fmt.Errorf("[%s] failed to store header: %w", hi.logPrefix, err)
+	}
+
 	isWithFastFinality := true
 	reorgFunc := func() (bool, error) {
 		if p, ok := engine.(consensus.PoSA); ok {
@@ -882,10 +886,14 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 					justifiedNumber = justifiedNumberGot
 				}
 			}
+
 			if config.IsPlato(hi.highest) {
-				if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, header); err == nil {
+				if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, hi.highestHeader); err == nil {
 					curJustifiedNumber = justifiedNumberGot
 				}
+			}
+			if justifiedNumber != 0 || curJustifiedNumber != 0 {
+				log.Info("FeedHeaderPoW", "justifiedNumber", justifiedNumber, "curJustifiedNumber", curJustifiedNumber)
 			}
 			if justifiedNumber == curJustifiedNumber {
 				// Parent's total difficulty
@@ -909,6 +917,7 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 		if err != nil {
 			return nil, err
 		}
+		hi.highestHeader = header
 		hi.highest = blockHeight
 		hi.highestHash = hash
 		hi.highestTimestamp = header.Time
@@ -927,11 +936,6 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 	if err = rawdb.WriteTd(db, hash, blockHeight, td); err != nil {
 		return nil, fmt.Errorf("[%s] failed to WriteTd: %w", hi.logPrefix, err)
 	}
-
-	if err = db.Put(kv.Headers, dbutils.HeaderKey(blockHeight, hash), headerRaw); err != nil {
-		return nil, fmt.Errorf("[%s] failed to store header: %w", hi.logPrefix, err)
-	}
-
 	hi.prevHash = hash
 	return td, nil
 }
