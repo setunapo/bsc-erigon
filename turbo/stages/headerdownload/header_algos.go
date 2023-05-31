@@ -886,14 +886,10 @@ func (hi *HeaderInserter) FeedHeaderPoW(db kv.StatelessRwTx, headerReader servic
 					justifiedNumber = justifiedNumberGot
 				}
 			}
-
 			if config.IsPlato(hi.highest) {
 				if justifiedNumberGot, _, err := p.GetJustifiedNumberAndHash(consensusHeaderReader, hi.highestHeader); err == nil {
 					curJustifiedNumber = justifiedNumberGot
 				}
-			}
-			if justifiedNumber != 0 || curJustifiedNumber != 0 {
-				log.Info("FeedHeaderPoW", "justifiedNumber", justifiedNumber, "curJustifiedNumber", curJustifiedNumber)
 			}
 			if justifiedNumber == curJustifiedNumber {
 				// Parent's total difficulty
