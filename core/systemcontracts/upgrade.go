@@ -731,6 +731,7 @@ func UpgradeBuildInSystemContract(config *chain.Config, blockNumber *big.Int, st
 	}
 
 	logger := log.New("system-contract-upgrade", config.ChainName)
+/*
 	if config.IsOnRamanujan(blockNumber) {
 		applySystemContractUpgrade(RamanujanUpgrade[config.ChainName], blockNumber, statedb, logger)
 	}
@@ -771,10 +772,10 @@ func UpgradeBuildInSystemContract(config *chain.Config, blockNumber *big.Int, st
 		applySystemContractUpgrade(LubanUpgrade[config.ChainName], blockNumber, statedb, logger)
 	}
 
+*/
 	if config.IsOnPlato(blockNumber) {
 		applySystemContractUpgrade(PlatoUpgrade[config.ChainName], blockNumber, statedb, logger)
 	}
-
 	/*
 		apply other upgrades
 	*/

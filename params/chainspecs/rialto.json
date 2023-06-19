@@ -22,7 +22,10 @@
   "planckBlock": 5,
   "__comment2__": "lubanBlock%200 != 0, e.g. lubanBlock == 400 is unacceptable",
   "lubanBlock": 6,
-  "platoblock": 7,
+  "platoBlock": 7,
+  "hertzBlock": 8,
+  "londonBlock": 8,
+  "berlinBlock": 8,
   "parlia": {
     "DBPath": "",
     "InMemory": false,
