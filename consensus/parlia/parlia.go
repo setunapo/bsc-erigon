@@ -806,6 +806,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 
 	snap, err := snap.apply(headers, chain, parents, p.chainConfig, doLog)
 	if err != nil {
+		log.Error("snap.apply", "err", err, "snap.Number", snap.Number)
 		return nil, err
 	}
 	p.recentSnaps.Add(snap.Hash, snap)
