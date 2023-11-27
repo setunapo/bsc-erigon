@@ -734,7 +734,6 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 	}
 
 	for snap == nil {
-		log.Info("Parlia snapshot", "number", number, "hash", hash)
 		// If an in-memory snapshot was found, use that
 		if s, ok := p.recentSnaps.Get(hash); ok {
 			snap = s
