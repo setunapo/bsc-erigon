@@ -1512,6 +1512,7 @@ func (p *Parlia) applyTransaction(from libcommon.Address, to libcommon.Address, 
 ) (types.Transactions, types.Transaction, *types.Receipt, error) {
 	nonce := ibs.GetNonce(from)
 	expectedTx := types.Transaction(types.NewTransaction(nonce, to, value, math.MaxUint64/2, u256.Num0, data))
+	log.Info("=====expectedTx=====", "nonce", nonce, "to", to, "value", value, "data", data)
 	expectedHash := expectedTx.SigningHash(p.chainConfig.ChainID)
 	if from == p.val && mining {
 		signature, err := p.signFn(from, expectedTx.SigningHash(p.chainConfig.ChainID).Bytes(), p.chainConfig.ChainID)
