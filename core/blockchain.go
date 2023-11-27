@@ -133,7 +133,7 @@ func ExecuteBlockEphemerallyForBSC(
 
 		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, *vmConfig, excessDataGas)
 		if block.Number().Uint64() == 33851236 {
-			log.Info("Bad block receipt", "TxHash", receipt.TxHash, "GasUsed", receipt.GasUsed)
+			log.Info("Bad block receipt", "TxHash", receipt.TxHash, "GasUsed", receipt.GasUsed, "cumulativeGasUsed", receipt.CumulativeGasUsed)
 		}
 		if writeTrace {
 			if ftracer, ok := vmConfig.Tracer.(vm.FlushableTracer); ok {
