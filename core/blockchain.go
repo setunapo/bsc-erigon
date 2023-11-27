@@ -19,6 +19,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/ledgerwatch/log/v3"
 	"math/big"
 	"time"
 
@@ -131,6 +132,9 @@ func ExecuteBlockEphemerallyForBSC(
 		}
 
 		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, *vmConfig, excessDataGas)
+		if block.Number().Uint64() == 33851236 {
+			log.Info("Bad block receipt", "TxHash", receipt.TxHash, "GasUsed", receipt.GasUsed)
+		}
 		if writeTrace {
 			if ftracer, ok := vmConfig.Tracer.(vm.FlushableTracer); ok {
 				ftracer.Flush(tx)
