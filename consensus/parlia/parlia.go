@@ -752,7 +752,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 				}
 			}
 		}
-		if number == 0 || (number%p.config.Epoch == 0 && (len(headers) > params.FullImmutabilityThreshold)) {
+		if number == 0 || (number%p.config.Epoch == 0 && (len(headers) > params.FullImmutabilityThreshold-10)) {
 			// Headers included into the snapshots have to be trusted as checkpoints
 			checkpoint := chain.GetHeader(hash, number)
 			if checkpoint != nil {
@@ -763,6 +763,11 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 				}
 				// new snapshot
 				snap = newSnapshot(p.config, p.signatures, number, hash, validators, voteAddrs)
+				voteAttestation, err := getVoteAttestationFromHeader(checkpoint, p.chainConfig, p.config)
+				if err != nil {
+					log.Error("getVoteAttestationFromHeader failed when new snapshot", "err", err)
+				}
+				snap.Attestation = voteAttestation.Data
 				if err := snap.store(p.db); err != nil {
 					return nil, err
 				}
