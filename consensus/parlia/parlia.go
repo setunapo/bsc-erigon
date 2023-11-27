@@ -734,9 +734,11 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 	}
 
 	for snap == nil {
+		log.Info("Parlia snapshot", "number", number, "hash", hash)
 		// If an in-memory snapshot was found, use that
 		if s, ok := p.recentSnaps.Get(hash); ok {
 			snap = s
+			log.Info("get snapshot1", "number", number, "hash", hash)
 			break
 		}
 
@@ -746,6 +748,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 				//log.Trace("Loaded snapshot from disk", "number", number, "hash", hash)
 				snap = s
 				if !verify || snap != nil {
+					log.Info("get snapshot2", "number", number, "hash", hash)
 					break
 				}
 			}
@@ -764,6 +767,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 				if err := snap.store(p.db); err != nil {
 					return nil, err
 				}
+				log.Info("get snapshot3", "number", number, "hash", hash)
 				break
 			}
 		}
