@@ -27,7 +27,6 @@ import (
 	"github.com/ledgerwatch/erigon/common/u256"
 	"github.com/ledgerwatch/erigon/core/vm/evmtypes"
 	"github.com/ledgerwatch/erigon/crypto"
-	"github.com/ledgerwatch/erigon/eth/tracers/logger"
 	"github.com/ledgerwatch/erigon/params"
 )
 
@@ -107,15 +106,15 @@ type EVM struct {
 	callGasTemp uint64
 }
 
-// 0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0
+// bad tx: 0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
 // only ever be used *once*.
 func NewEVM(blockCtx evmtypes.BlockContext, txCtx evmtypes.TxContext, state evmtypes.IntraBlockState, chainConfig *chain.Config, vmConfig Config) *EVM {
 
-	if txCtx.TxHash == "0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0" {
-		vmConfig.Debug = true
-		vmConfig.Tracer = logger.NewStructLogger(&logger.LogConfig{})
-	}
+	// if txCtx.TxHash == "0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0" {
+	// 	vmConfig.Debug = true
+	//	vmConfig.Tracer = logger.NewStructLogger(&logger.LogConfig{})
+	// }
 	evm := &EVM{
 		context:         blockCtx,
 		txContext:       txCtx,
