@@ -737,7 +737,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 		// If an in-memory snapshot was found, use that
 		if s, ok := p.recentSnaps.Get(hash); ok {
 			snap = s
-			log.Info("get snapshot1", "number", number, "hash", hash)
+			log.Trace("get snapshot1", "number", number, "hash", hash)
 			break
 		}
 
@@ -814,7 +814,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 		log.Error("snap.apply", "err", err, "snap.Number", snap.Number)
 		return nil, err
 	}
-	log.Info("generate snapshot", "num", snap.Number)
+	log.Trace("generate snapshot", "num", snap.Number)
 	p.recentSnaps.Add(snap.Hash, snap)
 
 	// If we've generated a new checkpoint snapshot, save to disk
