@@ -747,7 +747,7 @@ func (p *Parlia) snapshot(chain consensus.ChainHeaderReader, number uint64, hash
 				//log.Trace("Loaded snapshot from disk", "number", number, "hash", hash)
 				snap = s
 				if !verify || snap != nil {
-					log.Info("get snapshot2", "number", number, "hash", hash)
+					log.Trace("get snapshot2", "number", number, "hash", hash)
 					break
 				}
 			}

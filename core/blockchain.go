@@ -20,6 +20,7 @@ package core
 import (
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/ledgerwatch/log/v3"
@@ -134,9 +135,12 @@ func ExecuteBlockEphemerallyForBSC(
 		}
 
 		// bad tx: 0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0
+		var debugLogger *logger.StructLogger
 		if tx.Hash() == libcommon.HexToHash("0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0") {
+			log.Info("enter bad tx: 0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0")
 			vmConfig.Debug = true
-			vmConfig.Tracer = logger.NewStructLogger(&logger.LogConfig{})
+			debugLogger = logger.NewStructLogger(&logger.LogConfig{})
+			vmConfig.Tracer = debugLogger
 		} else {
 			vmConfig.Debug = false
 			vmConfig.Tracer = nil
@@ -144,6 +148,11 @@ func ExecuteBlockEphemerallyForBSC(
 		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, *vmConfig, excessDataGas)
 		if block.Number().Uint64() == 33851236 {
 			log.Info("Bad block receipt", "TxHash", receipt.TxHash, "GasUsed", receipt.GasUsed, "cumulativeGasUsed", receipt.CumulativeGasUsed)
+		}
+		if tx.Hash() == libcommon.HexToHash("0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0") {
+			sLog := debugLogger.StructLogs()
+			log.Info("enter bad tx: to WriteTrace", "len(sLog)", len(sLog))
+			logger.WriteTrace(os.Stdout, debugLogger.StructLogs())
 		}
 		if writeTrace {
 			if ftracer, ok := vmConfig.Tracer.(vm.FlushableTracer); ok {
