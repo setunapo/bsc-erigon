@@ -19,9 +19,10 @@ package core
 
 import (
 	"fmt"
-	"github.com/ledgerwatch/log/v3"
 	"math/big"
 	"time"
+
+	"github.com/ledgerwatch/log/v3"
 
 	metrics2 "github.com/VictoriaMetrics/metrics"
 	"golang.org/x/crypto/sha3"
@@ -39,6 +40,7 @@ import (
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/core/vm"
 	"github.com/ledgerwatch/erigon/core/vm/evmtypes"
+	"github.com/ledgerwatch/erigon/eth/tracers/logger"
 	"github.com/ledgerwatch/erigon/rlp"
 )
 
@@ -131,6 +133,14 @@ func ExecuteBlockEphemerallyForBSC(
 			writeTrace = true
 		}
 
+		// bad tx: 0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0
+		if tx.Hash() == libcommon.HexToHash("0x7eba4edc7c1806d6ee1691d43513838931de5c94f9da56ec865721b402f775b0") {
+			vmConfig.Debug = true
+			vmConfig.Tracer = logger.NewStructLogger(&logger.LogConfig{})
+		} else {
+			vmConfig.Debug = false
+			vmConfig.Tracer = nil
+		}
 		receipt, _, err := ApplyTransaction(chainConfig, blockHashFunc, engine, nil, gp, ibs, noop, header, tx, usedGas, *vmConfig, excessDataGas)
 		if block.Number().Uint64() == 33851236 {
 			log.Info("Bad block receipt", "TxHash", receipt.TxHash, "GasUsed", receipt.GasUsed, "cumulativeGasUsed", receipt.CumulativeGasUsed)
