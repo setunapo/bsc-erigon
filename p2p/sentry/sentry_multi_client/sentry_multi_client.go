@@ -510,6 +510,14 @@ func (cs *MultiClient) newBlock66(ctx context.Context, inreq *proto_sentry.Inbou
 	if err := rlp.DecodeBytes(inreq.Data, &request); err != nil {
 		return fmt.Errorf("decode 4 NewBlockMsg: %w", err)
 	}
+	// log.Info("newBlock66", "block", request.Block.Number(),
+	//	"hash", request.Block.Hash(),
+	//	"Sidecar", len(request.Sidecars),
+	//	"nodeName", cs.nodeName)
+	//	[INFO] [05-10|09:55:25.075] NewBlockMsg                              block Number=40207071
+	//	Sidecar Number=0
+	//    PeerID=665cf77ca26a8421cfe61a52ac312958308d4912e78ce8e0f61d6902e4494d4cc38f9b0dd1b23a427a7a5734e27e5d9729231426b06bb9c73b56a142f83f6b68
+
 	if err := request.SanityCheck(); err != nil {
 		return fmt.Errorf("newBlock66: %w", err)
 	}
@@ -520,6 +528,12 @@ func (cs *MultiClient) newBlock66(ctx context.Context, inreq *proto_sentry.Inbou
 	if request.Sidecars != nil && len(request.Sidecars) > 0 {
 		request.Block = request.Block.WithSidecars(request.Sidecars)
 	}
+	log.Info("newBlock66", "block", request.Block.NumberU64(),
+		"hash", request.Block.Hash(),
+		"Sidecar Number", len(request.Sidecars),
+		"len(inreq.Data)", len(inreq.Data),
+		"nodeName", cs.nodeName,
+		"PeerID", fmt.Sprintf("%x", sentry2.ConvertH512ToPeerID(inreq.PeerId))[:8])
 
 	if segments, penalty, err := cs.Hd.SingleHeaderAsSegment(headerRaw, request.Block.Header(), true /* penalizePoSBlocks */); err == nil {
 		if penalty == headerdownload.NoPenalty {
