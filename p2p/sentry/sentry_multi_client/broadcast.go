@@ -61,6 +61,8 @@ func (cs *MultiClient) BroadcastNewBlock(ctx context.Context, header *types.Head
 		log.Error("broadcastNewBlock", "err", err)
 	}
 
+	log.Info("BroadcastNewBlock", "block", block.Number(), "hash", block.Hash(),
+		"len(body.Sidecars)", len(body.Sidecars))
 	data, err := rlp.EncodeToBytes(&eth.NewBlockPacket{
 		Block:    block,
 		TD:       td,
